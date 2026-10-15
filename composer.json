@@ -1,0 +1,10 @@
+{
+  "name": "mindcare/mindcare",
+  "description": "MindCare+ Plataforma de Bienestar Emocional",
+  "type": "project",
+  "require": {
+    "php": ">=7.4",
+    "ext-pdo": "*",
+    "ext-pdo_mysql": "*"
+  }
+}
