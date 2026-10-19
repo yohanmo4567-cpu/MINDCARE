@@ -1,0 +1,8 @@
+{
+  "name": "mindcare/mindcare",
+  "description": "MindCare+ Plataforma de Bienestar Emocional",
+  "type": "project",
+  "require": {
+    "php": "8.2.*"
+  }
+}
