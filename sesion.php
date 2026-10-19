@@ -24,6 +24,24 @@ $apellido = htmlspecialchars($_SESSION['apellido'] ?? '',         ENT_QUOTES, 'U
 $esAdmin  = (bool)($_SESSION['es_admin'] ?? false);
 $iniciales = strtoupper(mb_substr($nombre, 0, 1) . mb_substr($apellido, 0, 1));
 
+// Si es usuario regular, asegurar que completó la encuesta inicial
+if (!$esAdmin) {
+    if (!isset($_SESSION['encuesta_completada'])) {
+        try {
+            $pdoEncCheck = conectarDB();
+            $stmtEncCheck = $pdoEncCheck->prepare('SELECT id_encuesta FROM encuesta_inicial WHERE id_usuario = ? LIMIT 1');
+            $stmtEncCheck->execute([$uid]);
+            $_SESSION['encuesta_completada'] = (bool)$stmtEncCheck->fetch();
+        } catch (PDOException $e) {
+            error_log('[MindCare+ Sesión] Error verificando encuesta inicial: ' . $e->getMessage());
+        }
+    }
+    if (empty($_SESSION['encuesta_completada'])) {
+        header('Location: encuesta_inicial.php');
+        exit;
+    }
+}
+
 // ── VIDEO (YouTube embed) ─────────────────────────────────────────
 // Convierte cualquier link de YouTube (watch?v=, youtu.be/, shorts/, embed/)
 // en una URL de embed válida. Devuelve null si no reconoce el link.

@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MindCare+ | Cuéntanos sobre ti</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    /* ── Encuesta ────────────────────────────────────────────── */
+    .survey-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+      background:
+        radial-gradient(circle at 80% 10%, rgba(139,126,217,.22), transparent 30%),
+        radial-gradient(circle at 10% 90%, rgba(201,160,224,.18), transparent 28%),
+        linear-gradient(135deg, #f8f6fc 0%, #f3eefb 60%, #f0eafc 100%);
+    }
+
+    html[data-theme="dark"] .survey-page {
+      background:
+        radial-gradient(circle at 80% 10%, rgba(179,163,236,.12), transparent 30%),
+        radial-gradient(circle at 10% 90%, rgba(217,174,232,.10), transparent 28%),
+        linear-gradient(135deg, #171225 0%, #201a33 60%, #1e1630 100%);
+    }
+
+    .survey-card {
+      width: min(100%, 680px);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    /* Cabecera */
+    .survey-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      padding: 32px 36px 28px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .survey-header::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 160px; height: 160px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.08);
+    }
+
+    .survey-header::after {
+      content: '';
+      position: absolute;
+      bottom: -30px; left: 40px;
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.06);
+    }
+
+    .survey-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .survey-brand .mark {
+      width: 32px; height: 32px;
+      background: rgba(255,255,255,.25);
+      border-radius: 50%;
+      display: grid; place-items: center;
+      font-weight: 900; font-size: 1rem;
+    }
+
+    .survey-brand span {
+      font-weight: 800;
+      font-size: 1.05rem;
+      letter-spacing: -.2px;
+    }
+
+    .survey-header h1 {
+      font-size: clamp(1.4rem, 4vw, 1.9rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+
+    .survey-header p {
+      font-size: .92rem;
+      opacity: .85;
+      max-width: 460px;
+      line-height: 1.6;
+    }
+
+    /* Barra de progreso */
+    .survey-progress {
+      padding: 18px 36px 0;
+      background: var(--surface);
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .progress-meta span {
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .progress-meta strong {
+      font-size: .82rem;
+      color: var(--primary-dark);
+    }
+
+    .progress-track {
+      height: 6px;
+      background: var(--line);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width .4s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* Cuerpo del formulario */
+    .survey-body {
+      padding: 28px 36px 32px;
+    }
+
+    /* Cada pregunta */
+    .question-block {
+      display: none;
+      animation: fadeSlide .35s ease;
+    }
+
+    .question-block.active {
+      display: block;
+    }
+
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateX(18px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    .question-number {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    .question-text {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    /* Opciones */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .option-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border: 2px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface-soft);
+      color: var(--ink);
+      font-family: inherit;
+      font-size: .88rem;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color .2s, background .2s, transform .15s, box-shadow .2s;
+      line-height: 1.35;
+    }
+
+    .option-btn:hover {
+      border-color: var(--primary);
+      background: var(--surface);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(139,126,217,.15);
+    }
+
+    .option-btn.selected {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, rgba(139,126,217,.12), rgba(201,160,224,.10));
+      box-shadow: 0 0 0 3px rgba(139,126,217,.18);
+    }
+
+    .option-emoji {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .option-label { flex: 1; }
+
+    .option-check {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--line);
+      flex-shrink: 0;
+      display: grid; place-items: center;
+      transition: border-color .2s, background .2s;
+    }
+
+    .option-btn.selected .option-check {
+      border-color: var(--primary);
+      background: var(--primary);
+    }
+
+    .option-btn.selected .option-check::after {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    /* Navegación */
+    .survey-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 28px;
+      gap: 12px;
+    }
+
+    .btn-prev {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 11px 20px;
+      border: 1.5px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--muted);
+      font-family: inherit;
+      font-size: .875rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .btn-prev:hover {
+      border-color: var(--primary);
+      color: var(--primary-dark);
+    }
+
+    .btn-prev:disabled {
+      opacity: .35;
+      cursor: not-allowed;
+    }
+
+    .btn-next {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 28px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      font-family: inherit;
+      font-size: .9rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: opacity .2s, transform .15s, box-shadow .2s;
+      margin-left: auto;
+    }
+
+    .btn-next:hover {
+      opacity: .92;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(108,92,196,.3);
+    }
+
+    .btn-next:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Pantalla de éxito */
+    .survey-success {
+      display: none;
+      text-align: center;
+      padding: 48px 36px;
+      animation: fadeSlide .4s ease;
+    }
+
+    .success-icon {
+      font-size: 4rem;
+      margin-bottom: 16px;
+      animation: bounceIn .5s ease;
+    }
+
+    @keyframes bounceIn {
+      0%   { transform: scale(.4); opacity: 0; }
+      70%  { transform: scale(1.1); }
+      100% { transform: scale(1);  opacity: 1; }
+    }
+
+    .survey-success h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+
+    .survey-success p {
+      color: var(--muted);
+      font-size: .95rem;
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    .btn-dashboard {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity .2s, transform .15s, box-shadow .2s;
+    }
+
+    .btn-dashboard:hover {
+      opacity: .9;
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(108,92,196,.3);
+    }
+
+    /* Error */
+    .error-hint {
+      font-size: .78rem;
+      color: #b3473d;
+      font-weight: 600;
+      margin-top: 12px;
+      display: none;
+    }
+
+    .error-hint.show { display: block; }
+
+    /* Alerta servidor */
+    .alert-server {
+      padding: 12px 16px;
+      border-radius: 10px;
+      background: #fdecea;
+      color: #b0303d;
+      border: 1px solid #f5b7b1;
+      font-size: .875rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .alert-server.show { display: block; }
+
+    @media (max-width: 540px) {
+      .survey-header { padding: 24px 20px 20px; }
+      .survey-progress { padding: 14px 20px 0; }
+      .survey-body { padding: 20px 20px 24px; }
+      .options-grid { grid-template-columns: 1fr; }
+      .survey-success { padding: 36px 20px; }
+    }
+  </style>
+</head>
+<body>
+<div class="survey-page">
+  <div class="survey-card">
+
+    <!-- Cabecera -->
+    <div class="survey-header">
+      <div class="survey-brand">
+        <div class="mark">+</div>
+        <span>MindCare+</span>
+      </div>
+      <h1>Cuéntanos un poco sobre ti 💜</h1>
+      <p>Solo toma 1 minuto. Tus respuestas nos ayudan a personalizar tu experiencia de bienestar.</p>
+    </div>
+
+    <!-- Progreso -->
+    <div class="survey-progress" id="progressArea">
+      <div class="progress-meta">
+        <span>Pregunta <strong id="currentQ">1</strong> de <strong>5</strong></span>
+        <strong id="pctLabel">20%</strong>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill" style="width:20%"></div>
+      </div>
+    </div>
+
+    <!-- Formulario -->
+    <div class="survey-body">
+      <div class="alert-server" id="alertServer"></div>
+
+      <!-- Pregunta 1 -->
+      <div class="question-block active" id="q1">
+        <div class="question-number">✦ Pregunta 1</div>
+        <div class="question-text">¿Por qué decidiste usar MindCare+?</div>
+        <div class="options-grid">
+          <button type="button" class="option-btn" data-q="1" data-val="Quiero mejorar mi bienestar emocional" onclick="seleccionar(this)">
+            <span class="option-emoji">🌱</span>
+            <span class="option-label">Quiero mejorar mi bienestar emocional</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="1" data-val="Necesito gestionar el estrés y la ansiedad" onclick="seleccionar(this)">
+            <span class="option-emoji">😰</span>
+            <span class="option-label">Necesito gestionar el estrés y la ansiedad</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="1" data-val="Quiero construir hábitos saludables" onclick="seleccionar(this)">
+            <span class="option-emoji">🔁</span>
+            <span class="option-label">Quiero construir hábitos saludables</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="1" data-val="Busco recursos de salud mental" onclick="seleccionar(this)">
+            <span class="option-emoji">📚</span>
+            <span class="option-label">Busco recursos de salud mental</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="1" data-val="Por recomendación de alguien" onclick="seleccionar(this)">
+            <span class="option-emoji">🤝</span>
+            <span class="option-label">Por recomendación de alguien</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="1" data-val="Solo quiero explorar la plataforma" onclick="seleccionar(this)">
+            <span class="option-emoji">🔍</span>
+            <span class="option-label">Solo quiero explorar la plataforma</span>
+            <span class="option-check"></span>
+          </button>
+        </div>
+        <div class="error-hint" id="err1">⚠️ Por favor selecciona una opción para continuar.</div>
+      </div>
+
+      <!-- Pregunta 2 -->
+      <div class="question-block" id="q2">
+        <div class="question-number">✦ Pregunta 2</div>
+        <div class="question-text">¿Cómo te sientes emocionalmente en este momento?</div>
+        <div class="options-grid">
+          <button type="button" class="option-btn" data-q="2" data-val="Muy bien, con energía positiva" onclick="seleccionar(this)">
+            <span class="option-emoji">😄</span>
+            <span class="option-label">Muy bien, con energía positiva</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="2" data-val="Bien, pero con algunas preocupaciones" onclick="seleccionar(this)">
+            <span class="option-emoji">🙂</span>
+            <span class="option-label">Bien, pero con algunas preocupaciones</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="2" data-val="Regular, me siento estresado/a" onclick="seleccionar(this)">
+            <span class="option-emoji">😐</span>
+            <span class="option-label">Regular, me siento estresado/a</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="2" data-val="No muy bien, necesito apoyo" onclick="seleccionar(this)">
+            <span class="option-emoji">😔</span>
+            <span class="option-label">No muy bien, necesito apoyo</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="2" data-val="Ansioso/a y con mucha tensión" onclick="seleccionar(this)">
+            <span class="option-emoji">😰</span>
+            <span class="option-label">Ansioso/a y con mucha tensión</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="2" data-val="Agotado/a emocionalmente" onclick="seleccionar(this)">
+            <span class="option-emoji">😴</span>
+            <span class="option-label">Agotado/a emocionalmente</span>
+            <span class="option-check"></span>
+          </button>
+        </div>
+        <div class="error-hint" id="err2">⚠️ Por favor selecciona una opción para continuar.</div>
+      </div>
+
+      <!-- Pregunta 3 -->
+      <div class="question-block" id="q3">
+        <div class="question-number">✦ Pregunta 3</div>
+        <div class="question-text">¿Qué esperas lograr con MindCare+?</div>
+        <div class="options-grid">
+          <button type="button" class="option-btn" data-q="3" data-val="Llevar un registro de mis emociones" onclick="seleccionar(this)">
+            <span class="option-emoji">📓</span>
+            <span class="option-label">Llevar un registro de mis emociones</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="3" data-val="Crear y mantener hábitos saludables" onclick="seleccionar(this)">
+            <span class="option-emoji">✅</span>
+            <span class="option-label">Crear y mantener hábitos saludables</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="3" data-val="Aprender sobre salud mental" onclick="seleccionar(this)">
+            <span class="option-emoji">🧠</span>
+            <span class="option-label">Aprender sobre salud mental</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="3" data-val="Reducir el estrés con actividades" onclick="seleccionar(this)">
+            <span class="option-emoji">🧘</span>
+            <span class="option-label">Reducir el estrés con actividades</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="3" data-val="Ver mi progreso y estadísticas" onclick="seleccionar(this)">
+            <span class="option-emoji">📊</span>
+            <span class="option-label">Ver mi progreso y estadísticas</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="3" data-val="Mejorar mi calidad de vida en general" onclick="seleccionar(this)">
+            <span class="option-emoji">🌟</span>
+            <span class="option-label">Mejorar mi calidad de vida en general</span>
+            <span class="option-check"></span>
+          </button>
+        </div>
+        <div class="error-hint" id="err3">⚠️ Por favor selecciona una opción para continuar.</div>
+      </div>
+
+      <!-- Pregunta 4 -->
+      <div class="question-block" id="q4">
+        <div class="question-number">✦ Pregunta 4</div>
+        <div class="question-text">¿Con qué frecuencia planeas usar la plataforma?</div>
+        <div class="options-grid">
+          <button type="button" class="option-btn" data-q="4" data-val="Todos los días" onclick="seleccionar(this)">
+            <span class="option-emoji">🔥</span>
+            <span class="option-label">Todos los días</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="4" data-val="Varias veces por semana" onclick="seleccionar(this)">
+            <span class="option-emoji">📅</span>
+            <span class="option-label">Varias veces por semana</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="4" data-val="Una vez por semana" onclick="seleccionar(this)">
+            <span class="option-emoji">🗓️</span>
+            <span class="option-label">Una vez por semana</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="4" data-val="Cuando lo necesite" onclick="seleccionar(this)">
+            <span class="option-emoji">💡</span>
+            <span class="option-label">Cuando lo necesite</span>
+            <span class="option-check"></span>
+          </button>
+        </div>
+        <div class="error-hint" id="err4">⚠️ Por favor selecciona una opción para continuar.</div>
+      </div>
+
+      <!-- Pregunta 5 -->
+      <div class="question-block" id="q5">
+        <div class="question-number">✦ Pregunta 5</div>
+        <div class="question-text">¿En qué área de tu vida quieres enfocarte más?</div>
+        <div class="options-grid">
+          <button type="button" class="option-btn" data-q="5" data-val="Salud mental y emocional" onclick="seleccionar(this)">
+            <span class="option-emoji">💜</span>
+            <span class="option-label">Salud mental y emocional</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="5" data-val="Productividad y organización" onclick="seleccionar(this)">
+            <span class="option-emoji">🎯</span>
+            <span class="option-label">Productividad y organización</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="5" data-val="Relaciones y vida social" onclick="seleccionar(this)">
+            <span class="option-emoji">🤗</span>
+            <span class="option-label">Relaciones y vida social</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="5" data-val="Sueño y descanso" onclick="seleccionar(this)">
+            <span class="option-emoji">🌙</span>
+            <span class="option-label">Sueño y descanso</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="5" data-val="Ejercicio y cuerpo" onclick="seleccionar(this)">
+            <span class="option-emoji">💪</span>
+            <span class="option-label">Ejercicio y cuerpo</span>
+            <span class="option-check"></span>
+          </button>
+          <button type="button" class="option-btn" data-q="5" data-val="Alimentación y nutrición" onclick="seleccionar(this)">
+            <span class="option-emoji">🥗</span>
+            <span class="option-label">Alimentación y nutrición</span>
+            <span class="option-check"></span>
+          </button>
+        </div>
+        <div class="error-hint" id="err5">⚠️ Por favor selecciona una opción para continuar.</div>
+      </div>
+
+      <!-- Pantalla éxito -->
+      <div class="survey-success" id="surveySuccess">
+        <div class="success-icon">🎉</div>
+        <h2>¡Gracias, ya te conocemos mejor!</h2>
+        <p>Hemos personalizado tu experiencia en MindCare+.<br>Estamos listos para acompañarte en tu camino de bienestar.</p>
+        <a href="dashboard.php" class="btn-dashboard">Ir a mi dashboard →</a>
+      </div>
+
+      <!-- Navegación -->
+      <div class="survey-nav" id="surveyNav">
+        <button type="button" class="btn-prev" id="btnPrev" onclick="anterior()" disabled>← Anterior</button>
+        <button type="button" class="btn-next" id="btnNext" onclick="siguiente()">Siguiente →</button>
+      </div>
+
+    </div><!-- /survey-body -->
+  </div><!-- /survey-card -->
+</div><!-- /survey-page -->
+
+<script>
+  // ── Verificar si ya completó la encuesta previamente ──────
+  (async function() {
+    try {
+      const checkRes = await fetch('guardar_encuesta.php');
+      const checkData = await checkRes.json();
+      if (checkData && checkData.exito) {
+        window.location.replace('dashboard.php');
+      }
+    } catch (e) {}
+  })();
+
+  // ── Estado ───────────────────────────────────────────────
+  let preguntaActual = 1;
+  const totalPreguntas = 5;
+  const respuestas = {};
+
+  // ── Seleccionar opción ───────────────────────────────────
+  function seleccionar(btn) {
+    const q = btn.dataset.q;
+    document.querySelectorAll(`.option-btn[data-q="${q}"]`).forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    respuestas[q] = btn.dataset.val;
+    document.getElementById(`err${q}`).classList.remove('show');
+    document.getElementById('btnNext').disabled = false;
+  }
+
+  // ── Actualizar UI ────────────────────────────────────────
+  function actualizarUI() {
+    // Bloques
+    document.querySelectorAll('.question-block').forEach(b => b.classList.remove('active'));
+    const bloque = document.getElementById(`q${preguntaActual}`);
+    if (bloque) bloque.classList.add('active');
+
+    // Progreso
+    const pct = Math.round((preguntaActual / totalPreguntas) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('pctLabel').textContent = pct + '%';
+    document.getElementById('currentQ').textContent = preguntaActual;
+
+    // Botones
+    document.getElementById('btnPrev').disabled = (preguntaActual === 1);
+    const btnNext = document.getElementById('btnNext');
+    btnNext.textContent = preguntaActual === totalPreguntas ? 'Finalizar ✓' : 'Siguiente →';
+    btnNext.disabled = !respuestas[preguntaActual];
+  }
+
+  // ── Siguiente ────────────────────────────────────────────
+  function siguiente() {
+    if (!respuestas[preguntaActual]) {
+      document.getElementById(`err${preguntaActual}`).classList.add('show');
+      return;
+    }
+
+    if (preguntaActual < totalPreguntas) {
+      preguntaActual++;
+      actualizarUI();
+    } else {
+      enviarEncuesta();
+    }
+  }
+
+  // ── Anterior ─────────────────────────────────────────────
+  function anterior() {
+    if (preguntaActual > 1) {
+      preguntaActual--;
+      actualizarUI();
+    }
+  }
+
+  // ── Enviar ───────────────────────────────────────────────
+  async function enviarEncuesta() {
+    const btnNext = document.getElementById('btnNext');
+    btnNext.disabled = true;
+    btnNext.textContent = 'Guardando…';
+
+    const datos = new FormData();
+    datos.append('razon_uso',        respuestas['1']);
+    datos.append('estado_emocional', respuestas['2']);
+    datos.append('expectativa',      respuestas['3']);
+    datos.append('frecuencia_uso',   respuestas['4']);
+    datos.append('area_mejora',      respuestas['5']);
+
+    try {
+      const res  = await fetch('guardar_encuesta.php', { method: 'POST', body: datos });
+      const json = await res.json();
+
+      if (json.exito) {
+        // Ocultar preguntas y nav, mostrar éxito
+        document.querySelectorAll('.question-block').forEach(b => b.style.display = 'none');
+        document.getElementById('surveyNav').style.display    = 'none';
+        document.getElementById('progressArea').style.display = 'none';
+        document.getElementById('surveySuccess').style.display = 'block';
+        // Actualizar progreso a 100%
+        document.getElementById('progressFill').style.width = '100%';
+      } else {
+        const alerta = document.getElementById('alertServer');
+        alerta.textContent = json.mensaje || 'Ocurrió un error. Intenta de nuevo.';
+        alerta.classList.add('show');
+        btnNext.disabled = false;
+        btnNext.textContent = 'Finalizar ✓';
+      }
+    } catch (e) {
+      const alerta = document.getElementById('alertServer');
+      alerta.textContent = 'Error de conexión. Verifica que el servidor esté activo.';
+      alerta.classList.add('show');
+      btnNext.disabled = false;
+      btnNext.textContent = 'Finalizar ✓';
+    }
+  }
+
+  // ── Tema oscuro (sincronizado con styles.css) ────────────
+  const saved = localStorage.getItem('mc-theme');
+  if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+
+  // Init
+  actualizarUI();
+</script>
+</body>
+</html>

@@ -2,18 +2,15 @@
 /**
  * MindCare+ · registro.php
  * ─────────────────────────────────────────────────────────────
- * Registra un nuevo usuario en la base de datos MySQL (XAMPP).
+ * Registra un nuevo usuario en la base de datos MySQL (Railway / Local).
+ * Inicia la sesión automáticamente tras el registro y redirige a encuesta.php.
+ * ─────────────────────────────────────────────────────────────
  */
 
 declare(strict_types=1);
 
-// ── 1. CONFIGURACIÓN ────────────────────────────────────────────
-// Las credenciales de BD se leen desde variables de entorno del servidor.
-// En producción (Railway, Render, etc.) se configuran en el panel.
-// En local (XAMPP) se usan los valores por defecto si no están definidas.
-
 define('REDIRECT_REGISTRO',    'registro.html');
-define('REDIRECT_LOGIN',       'login.html');
+define('REDIRECT_ENCUESTA',    'encuesta.php');
 define('MIN_PASSWORD_LENGTH',  8);
 define('MIN_EDAD',             13);
 define('MAX_EDAD',             120);
@@ -22,8 +19,13 @@ define('MAX_EDAD',             120);
 header('Content-Type: text/html; charset=UTF-8');
 session_start();
 
+// Si ya tiene sesión activa y completó la encuesta, redirigir al dashboard
 if (isset($_SESSION['usuario_id'])) {
-    header('Location: dashboard.php');
+    if (!empty($_SESSION['encuesta_completada'])) {
+        header('Location: dashboard.php');
+    } else {
+        header('Location: ' . REDIRECT_ENCUESTA);
+    }
     exit;
 }
 
@@ -35,9 +37,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 require_once __DIR__ . '/conexion.php';
 
-
-function redirigirConError(string $codigo): never {
-    header('Location: ' . REDIRECT_REGISTRO . '?error=' . urlencode($codigo));
+function redirigirConError(string $codigo, ?string $detalle = null): never {
+    $url = REDIRECT_REGISTRO . '?error=' . urlencode($codigo);
+    if ($detalle !== null) {
+        $url .= '&msg=' . urlencode($detalle);
+    }
+    header('Location: ' . $url);
     exit;
 }
 
@@ -70,7 +75,6 @@ if (mb_strlen($password) < MIN_PASSWORD_LENGTH) {
     redirigirConError('campos');
 }
 
-// CORRECCIÓN: comparación directa de contraseñas (no hash_equals para texto plano)
 if ($password !== $confirm) {
     redirigirConError('contrasenas');
 }
@@ -84,46 +88,94 @@ if ($edadRaw !== '') {
     $edad = $edadInt;
 }
 
-// ── 7. BASE DE DATOS ──────────────────────────────────────────────
+// ── 7. PROCESO DE REGISTRO EN BASE DE DATOS ────────────────────────
 try {
+    // 1. Conexión dinámica con getenv() para Railway / local
     $pdo = conectarDB();
 
-    $stmtCheck = $pdo->prepare('SELECT id_usuario FROM usuario WHERE correo = :correo LIMIT 1');
-    $stmtCheck->execute([':correo' => $email]);
-
-    if ($stmtCheck->fetch() !== false) {
-        redirigirConError('correo_existe');
+    // 2. Verificar si el correo ya existe en la tabla de usuarios
+    $tabla = 'usuario';
+    try {
+        $stmtCheck = $pdo->prepare('SELECT id_usuario FROM usuario WHERE correo = :correo LIMIT 1');
+        $stmtCheck->execute([':correo' => $email]);
+        if ($stmtCheck->fetch() !== false) {
+            redirigirConError('correo_existe');
+        }
+    } catch (PDOException $eCheck) {
+        // Soporte en caso de que la tabla se haya creado como 'usuarios'
+        if (str_contains($eCheck->getMessage(), "Table") && str_contains($eCheck->getMessage(), "doesn't exist")) {
+            $tabla = 'usuarios';
+            $stmtCheck = $pdo->prepare('SELECT id_usuario FROM usuarios WHERE correo = :correo LIMIT 1');
+            $stmtCheck->execute([':correo' => $email]);
+            if ($stmtCheck->fetch() !== false) {
+                redirigirConError('correo_existe');
+            }
+        } else {
+            throw $eCheck;
+        }
     }
 
     $hashPassword = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
-
     if ($hashPassword === false) {
-        error_log('[MindCare+ Registro] Error al generar hash de contraseña.');
-        redirigirConError('servidor');
+        throw new PDOException('Error al generar el hash seguro de la contraseña.');
     }
 
-    $stmtInsert = $pdo->prepare(
-        'INSERT INTO usuario (nombre, apellido, correo, contraseña, fecha_registro, edad)
-         VALUES (:nombre, :apellido, :correo, :contrasena, CURDATE(), :edad)'
-    );
-    $stmtInsert->execute([
-        ':nombre'     => $nombre,
-        ':apellido'   => $apellido,
-        ':correo'     => $email,
-        ':contrasena' => $hashPassword,
-        ':edad'       => $edad,
-    ]);
+    // 3. Inserción con columnas del esquema: nombre, apellido, correo, contraseña, fecha_registro, edad
+    $sqlInsert = "INSERT INTO {$tabla} (nombre, apellido, correo, contraseña, fecha_registro, edad)
+                  VALUES (:nombre, :apellido, :correo, :contrasena, CURDATE(), :edad)";
+
+    try {
+        $stmtInsert = $pdo->prepare($sqlInsert);
+        $stmtInsert->execute([
+            ':nombre'     => $nombre,
+            ':apellido'   => $apellido,
+            ':correo'     => $email,
+            ':contrasena' => $hashPassword,
+            ':edad'       => $edad,
+        ]);
+    } catch (PDOException $eInsert) {
+        // Fallback por si la columna contraseña fue definida sin eñe ('contrasena')
+        if (str_contains($eInsert->getMessage(), "Unknown column 'contraseña'")) {
+            $sqlInsertAlt = "INSERT INTO {$tabla} (nombre, apellido, correo, contrasena, fecha_registro, edad)
+                             VALUES (:nombre, :apellido, :correo, :contrasena, CURDATE(), :edad)";
+            $stmtInsert = $pdo->prepare($sqlInsertAlt);
+            $stmtInsert->execute([
+                ':nombre'     => $nombre,
+                ':apellido'   => $apellido,
+                ':correo'     => $email,
+                ':contrasena' => $hashPassword,
+                ':edad'       => $edad,
+            ]);
+        } else {
+            throw $eInsert;
+        }
+    }
 
     $nuevoId = (int) $pdo->lastInsertId();
-    error_log(sprintf('[MindCare+ Registro] Nuevo usuario ID: %d, Correo: %s', $nuevoId, $email));
+    error_log(sprintf('[MindCare+ Registro] Usuario registrado con éxito. ID: %d, Correo: %s', $nuevoId, $email));
 
-    header('Location: ' . REDIRECT_LOGIN . '?registro=ok');
+    // 4. Iniciar sesión automáticamente para el nuevo usuario
+    session_regenerate_id(true);
+    $_SESSION['usuario_id']          = $nuevoId;
+    $_SESSION['nombre']              = $nombre;
+    $_SESSION['apellido']            = $apellido;
+    $_SESSION['correo']              = $email;
+    $_SESSION['es_admin']            = false;
+    $_SESSION['autenticado_en']      = time();
+    $_SESSION['encuesta_completada'] = false;
+
+    // 5. Redirección limpia a 'encuesta.php'
+    header('Location: ' . REDIRECT_ENCUESTA);
     exit;
 
 } catch (PDOException $e) {
-    if ($e->getCode() === '23000') {
+    // Manejo de excepciones sin provocar error 500 en el servidor
+    error_log('[MindCare+ Registro] Error BD: ' . $e->getMessage());
+
+    if ($e->getCode() === '23000' || str_contains($e->getMessage(), 'Duplicate entry')) {
         redirigirConError('correo_existe');
     }
-    error_log('[MindCare+ Registro] Error BD: ' . $e->getMessage());
-    redirigirConError('servidor');
+
+    $mensajeDetallado = 'Error al registrar usuario: ' . $e->getMessage();
+    redirigirConError('servidor', $mensajeDetallado);
 }

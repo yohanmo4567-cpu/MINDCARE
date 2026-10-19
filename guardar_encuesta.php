@@ -19,6 +19,22 @@ if (!isset($_SESSION['usuario_id'])) {
     responder(false, 'Sesión no válida. Inicia sesión de nuevo.');
 }
 
+// Si la solicitud es GET, responde el estado de completado de la encuesta
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    require_once __DIR__ . '/conexion.php';
+    try {
+        $pdo = conectarDB();
+        $check = $pdo->prepare('SELECT id_encuesta FROM encuesta_inicial WHERE id_usuario = ? LIMIT 1');
+        $check->execute([(int)$_SESSION['usuario_id']]);
+        $completada = (bool)$check->fetch();
+        $_SESSION['encuesta_completada'] = $completada;
+        responder($completada, $completada ? 'Encuesta ya completada' : 'Encuesta pendiente');
+    } catch (PDOException $e) {
+        error_log('[MindCare+ Encuesta Check] Error BD: ' . $e->getMessage());
+        responder(false, 'Error interno del servidor.');
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     responder(false, 'Método no permitido.');
 }
@@ -35,7 +51,6 @@ $area_mejora     = trim($_POST['area_mejora']       ?? '');
 if (!$razon_uso || !$estado_emocional || !$expectativa || !$frecuencia_uso || !$area_mejora) {
     responder(false, 'Faltan respuestas. Completa todas las preguntas.');
 }
-
 // Conexión centralizada a la base de datos
 require_once __DIR__ . '/conexion.php';
 

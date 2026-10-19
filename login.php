@@ -34,13 +34,32 @@ define('REDIRECT_DASHBOARD_ADMIN','panel_admin.php');
 header('Content-Type: text/html; charset=UTF-8');
 session_start();
 
-// Si ya hay sesión activa, redirigir directamente
+// Si ya hay sesión activa, verificar estado de la encuesta antes de redirigir
 if (isset($_SESSION['usuario_id'])) {
-    $destino = ($_SESSION['es_admin'] ?? false)
-        ? REDIRECT_DASHBOARD_ADMIN
-        : REDIRECT_DASHBOARD_USER;
-    header('Location: ' . $destino);
-    exit;
+    if (!empty($_SESSION['es_admin'])) {
+        header('Location: ' . REDIRECT_DASHBOARD_ADMIN);
+        exit;
+    }
+
+    require_once __DIR__ . '/conexion.php';
+    try {
+        $pdo = conectarDB();
+        $stmtEnc = $pdo->prepare('SELECT id_encuesta FROM encuesta_inicial WHERE id_usuario = ? LIMIT 1');
+        $stmtEnc->execute([(int)$_SESSION['usuario_id']]);
+        $encuestaHecha = (bool) $stmtEnc->fetch();
+        $_SESSION['encuesta_completada'] = $encuestaHecha;
+
+        if ($encuestaHecha) {
+            header('Location: ' . REDIRECT_DASHBOARD_USER);
+        } else {
+            header('Location: encuesta_inicial.php');
+        }
+        exit;
+    } catch (PDOException $e) {
+        error_log('[MindCare+ Login] Error verificando encuesta previa: ' . $e->getMessage());
+        header('Location: ' . REDIRECT_DASHBOARD_USER);
+        exit;
+    }
 }
 
 // ── 3. ACEPTAR SOLO POST ─────────────────────────────────────────
@@ -164,7 +183,7 @@ try {
 
     // ── 9. REDIRIGIR ─────────────────────────────────────────────
     if (!$encuestaHecha && !$esAdmin) {
-        header('Location: encuesta_inicial.html');
+        header('Location: encuesta_inicial.php');
     } else {
         $destino = $esAdmin ? REDIRECT_DASHBOARD_ADMIN : REDIRECT_DASHBOARD_USER;
         header('Location: ' . $destino);
