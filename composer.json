@@ -3,7 +3,7 @@
   "description": "MindCare+ Plataforma de Bienestar Emocional",
   "type": "project",
   "require": {
-    "php": ">=7.4",
+    "php": "^8.3",
     "ext-pdo": "*",
     "ext-pdo_mysql": "*"
   }
