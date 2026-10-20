@@ -1,0 +1,52 @@
+# ─── Variables de entorno y configuración sensible ───────────────────────────
+.env
+.env.local
+.env.production
+.env.staging
+config.local.php
+
+# ─── Uploads de usuarios (fotos de perfil, archivos privados) ─────────────────
+uploads/fotos/*.jpg
+uploads/fotos/*.jpeg
+uploads/fotos/*.png
+uploads/fotos/*.gif
+uploads/fotos/*.webp
+uploads/fotos/*.pdf
+# Mantener la estructura de carpetas con .gitkeep:
+!uploads/fotos/.gitkeep
+
+# ─── Logs del servidor ────────────────────────────────────────────────────────
+*.log
+logs/
+error_log
+
+# ─── Caché y temporales ───────────────────────────────────────────────────────
+*.cache
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Dependencias PHP (si usas Composer en el futuro) ─────────────────────────
+vendor/
+composer.lock
+
+# ─── IDEs y editores ──────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ─── Base de datos con datos reales (solo subir el esquema vacío) ─────────────
+*_backup.sql
+*_dump.sql
+*_datos.sql
+*_export.sql
+!*mindcare+-Base de datos.sql
+
+# ─── ZIP del proyecto ─────────────────────────────────────────────────────────
+*.zip
+*.tar.gz
+
+# ─── Archivos del sistema ─────────────────────────────────────────────────────
+__MACOSX/
