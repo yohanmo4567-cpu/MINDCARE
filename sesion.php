@@ -2,6 +2,7 @@
 // ── MINDCARE+ · sesion.php ──────────────────────────────────────
 // Incluir en TODOS los archivos PHP del dashboard.
 // ───────────────────────────────────────────────────────────────
+require_once __DIR__ . '/conexion.php';
 
 // Fija la zona horaria de Colombia de forma explícita. Sin esto, PHP usa
 // la zona horaria por defecto del servidor (a menudo UTC), lo que hace
@@ -15,25 +16,6 @@ session_start();
 if (!isset($_SESSION['usuario_id'])) {
     header('Location: login.html');
     exit;
-}
-
-function conectarDB(): PDO {
-    // Lee las credenciales desde variables de entorno del servidor.
-    // En producción (Railway, Render, etc.) se configuran en el panel.
-    // En local (XAMPP) se usan los valores por defecto si no hay .env.
-    $host    = getenv('DB_HOST') !== false ? getenv('DB_HOST') : '127.0.0.1';
-    $port    = getenv('DB_PORT') !== false ? getenv('DB_PORT') : '3306';
-    $name    = getenv('DB_NAME') !== false ? getenv('DB_NAME') : 'mindcare';
-    $user    = getenv('DB_USER') !== false ? getenv('DB_USER') : 'root';
-    $pass    = getenv('DB_PASS') !== false ? getenv('DB_PASS') : '';
-    $charset = 'utf8mb4';
-
-    $dsn = "mysql:host={$host};port={$port};dbname={$name};charset={$charset}";
-    return new PDO($dsn, $user, $pass, [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES   => false,
-    ]);
 }
 
 $uid      = (int) $_SESSION['usuario_id'];
@@ -195,8 +177,7 @@ function renderRecordatorioToasts(): void {
         $stmt->execute([$uid, $margen]);
         $proximos = $stmt->fetchAll();
     } catch (Throwable $e) {
-        // Si algo falla (p. ej. la tabla no existe todavía), la app sigue
-        // funcionando con normalidad; simplemente no habrá avisos.
+        registrarError($e, 'Recordatorios: no fue posible cargar notificaciones');
     }
     ?>
     <div id="recordatorioToasts" aria-live="polite"></div>

@@ -7,10 +7,9 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/conexion.php';
+
 // ── 1. CONFIGURACIÓN ────────────────────────────────────────────
-// Las credenciales de BD se leen desde variables de entorno del servidor.
-// En producción (Railway, Render, etc.) se configuran en el panel.
-// En local (XAMPP) se usan los valores por defecto si no están definidas.
 
 define('REDIRECT_REGISTRO',    'registro.html');
 define('REDIRECT_LOGIN',       'login.html');
@@ -34,22 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // ── 4. FUNCIONES ─────────────────────────────────────────────────
-function conectarDB(): PDO {
-    $host    = getenv('DB_HOST') !== false ? getenv('DB_HOST') : '127.0.0.1';
-    $port    = getenv('DB_PORT') !== false ? getenv('DB_PORT') : '3306';
-    $name    = getenv('DB_NAME') !== false ? getenv('DB_NAME') : 'mindcare';
-    $user    = getenv('DB_USER') !== false ? getenv('DB_USER') : 'root';
-    $pass    = getenv('DB_PASS') !== false ? getenv('DB_PASS') : '';
-    $charset = 'utf8mb4';
-
-    $dsn = "mysql:host={$host};port={$port};dbname={$name};charset={$charset}";
-    return new PDO($dsn, $user, $pass, [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES   => false,
-    ]);
-}
-
 function redirigirConError(string $codigo): never {
     header('Location: ' . REDIRECT_REGISTRO . '?error=' . urlencode($codigo));
     exit;
@@ -129,7 +112,7 @@ try {
     ]);
 
     $nuevoId = (int) $pdo->lastInsertId();
-    error_log(sprintf('[MindCare+ Registro] Nuevo usuario ID: %d, Correo: %s', $nuevoId, $email));
+    error_log(sprintf('[MindCare+ Registro] Nuevo usuario ID: %d', $nuevoId));
 
     header('Location: ' . REDIRECT_LOGIN . '?registro=ok');
     exit;
@@ -138,6 +121,9 @@ try {
     if ($e->getCode() === '23000') {
         redirigirConError('correo_existe');
     }
-    error_log('[MindCare+ Registro] Error BD: ' . $e->getMessage());
+    registrarError($e, 'Registro: error de base de datos');
+    redirigirConError('servidor');
+} catch (RuntimeException $e) {
+    registrarError($e, 'Registro: error de configuración o conexión');
     redirigirConError('servidor');
 }

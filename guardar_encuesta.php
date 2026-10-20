@@ -6,6 +6,7 @@
  */
 
 declare(strict_types=1);
+require_once __DIR__ . '/conexion.php';
 header('Content-Type: application/json; charset=UTF-8');
 session_start();
 
@@ -38,15 +39,7 @@ if (!$razon_uso || !$estado_emocional || !$expectativa || !$frecuencia_uso || !$
 
 // Conexión BD
 try {
-    $pdo = new PDO(
-        'mysql:host=127.0.0.1;port=3306;dbname=mindcare;charset=utf8mb4',
-        'root', '',
-        [
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES   => false,
-        ]
-    );
+    $pdo = conectarDB();
 
     // Verificar si ya respondió (no debería llegar aquí, pero por seguridad)
     $check = $pdo->prepare('SELECT id_encuesta FROM encuesta_inicial WHERE id_usuario = ? LIMIT 1');
@@ -79,6 +72,11 @@ try {
     responder(true, '¡Encuesta guardada correctamente!');
 
 } catch (PDOException $e) {
-    error_log('[MindCare+ Encuesta] Error BD: ' . $e->getMessage());
+    registrarError($e, 'Encuesta: error de base de datos');
+    http_response_code(500);
+    responder(false, 'Error interno del servidor. Intenta de nuevo.');
+} catch (RuntimeException $e) {
+    registrarError($e, 'Encuesta: error de configuración o conexión');
+    http_response_code(500);
     responder(false, 'Error interno del servidor. Intenta de nuevo.');
 }

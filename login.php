@@ -14,16 +14,15 @@
  *  5. Comprueba si existe registro en `administrador`
  *  6. Inicia sesión y redirige al dashboard correspondiente
  *
- * Requisitos: PHP >= 7.4, PDO, extensión pdo_mysql
+ * Requisitos: PHP >= 8.3, PDO, extensión pdo_mysql
  * ─────────────────────────────────────────────────────────────
  */
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/conexion.php';
+
 // ── 1. CONFIGURACIÓN ────────────────────────────────────────────
-// Las credenciales de BD se leen desde variables de entorno del servidor.
-// En producción (Railway, Render, etc.) se configuran en el panel.
-// En local (XAMPP) se usan los valores por defecto si no están definidas.
 
 // Rutas de redirección
 define('REDIRECT_LOGIN',          'login.html');
@@ -50,27 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // ── 4. FUNCIONES DE APOYO ────────────────────────────────────────
-
-/**
- * Retorna una conexión PDO usando variables de entorno.
- */
-function conectarDB(): PDO
-{
-    $host    = getenv('DB_HOST') !== false ? getenv('DB_HOST') : '127.0.0.1';
-    $port    = getenv('DB_PORT') !== false ? getenv('DB_PORT') : '3306';
-    $name    = getenv('DB_NAME') !== false ? getenv('DB_NAME') : 'mindcare';
-    $user    = getenv('DB_USER') !== false ? getenv('DB_USER') : 'root';
-    $pass    = getenv('DB_PASS') !== false ? getenv('DB_PASS') : '';
-    $charset = 'utf8mb4';
-
-    $dsn = "mysql:host={$host};port={$port};dbname={$name};charset={$charset}";
-    $opciones = [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES   => false,
-    ];
-    return new PDO($dsn, $user, $pass, $opciones);
-}
 
 /**
  * Redirige al login con un código de error en la query string.
@@ -112,8 +90,8 @@ function iniciarSesionSegura(PDO $pdo, array $usuario, bool $esAdmin, ?array $ad
                 ':id_admin' => $admin['id_admin'],
                 ':accion'   => 'LOGIN: Inicio de sesión de administrador',
             ]);
-        } catch (PDOException) {
-            // No interrumpir el login si falla la auditoría
+        } catch (PDOException $e) {
+            registrarError($e, 'Login: no fue posible registrar la auditoría');
         }
     }
 }
@@ -190,7 +168,9 @@ try {
     exit;
 
 } catch (PDOException $e) {
-    // Loguear el error real sin exponerlo al usuario
-    error_log('[MindCare+ Login] Error de base de datos: ' . $e->getMessage());
+    registrarError($e, 'Login: error de base de datos');
+    redirigirConError('servidor');
+} catch (RuntimeException $e) {
+    registrarError($e, 'Login: error de configuración o conexión');
     redirigirConError('servidor');
 }
