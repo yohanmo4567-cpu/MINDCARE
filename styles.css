@@ -590,6 +590,217 @@ h3 {
   padding: 26px;
 }
 
+/* ═══════════════════════════════════════════
+   REDES SOCIALES
+   ═══════════════════════════════════════════ */
+.social-section {
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
+
+.social-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: 48px;
+  align-items: center;
+}
+
+.social-copy h2 {
+  margin-bottom: 14px;
+}
+
+.social-copy > p:not(.eyebrow) {
+  max-width: 520px;
+  margin: 0;
+  color: var(--muted);
+}
+
+.social-notes {
+  display: grid;
+  gap: 10px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.social-notes li {
+  position: relative;
+  padding-left: 26px;
+}
+
+.social-notes li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 8px;
+  width: 10px;
+  height: 6px;
+  border-left: 2px solid var(--primary);
+  border-bottom: 2px solid var(--primary);
+  transform: rotate(-45deg);
+}
+
+.social-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.social-item {
+  min-width: 0;
+}
+
+/* Entrada progresiva (solo si JS esta activo: .social-list.is-reveal) */
+.social-list.is-reveal .social-item {
+  opacity: 0;
+  transform: translateY(18px);
+}
+
+.social-list.is-reveal .social-item.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.social-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 100%;
+  padding: 18px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease,
+    background-color 350ms ease, background 220ms ease;
+}
+
+.social-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.social-tiktok::before {
+  background: linear-gradient(135deg, rgba(37, 244, 238, 0.22), rgba(254, 44, 85, 0.22));
+}
+
+.social-github::before {
+  background: linear-gradient(135deg, rgba(139, 126, 217, 0.22), rgba(70, 78, 90, 0.22));
+}
+
+.social-btn:hover,
+.social-btn:focus-visible {
+  transform: translateY(-5px);
+  border-color: transparent;
+  box-shadow: 0 18px 34px rgba(46, 42, 64, 0.18);
+}
+
+.social-btn:hover::before,
+.social-btn:focus-visible::before {
+  opacity: 1;
+}
+
+.social-btn:active {
+  transform: translateY(-1px);
+}
+
+.social-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  border-radius: 14px;
+  color: #fff;
+  transition: transform 260ms ease, box-shadow 260ms ease;
+}
+
+.social-tiktok .social-icon {
+  background: linear-gradient(135deg, #25f4ee, #fe2c55);
+  box-shadow: 0 10px 20px rgba(254, 44, 85, 0.28);
+}
+
+.social-github .social-icon {
+  background: linear-gradient(135deg, #4b5563, #1f2328);
+  box-shadow: 0 10px 20px rgba(31, 35, 40, 0.28);
+}
+
+.social-btn:hover .social-icon,
+.social-btn:focus-visible .social-icon {
+  transform: translateY(-2px) scale(1.08) rotate(-6deg);
+}
+
+.social-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.social-text strong {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: var(--ink);
+  transition: color 350ms ease;
+}
+
+.social-text small {
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.social-arrow {
+  margin-left: auto;
+  flex: 0 0 auto;
+  color: var(--muted);
+  opacity: 0;
+  transform: translate(-6px, 6px);
+  transition: transform 240ms ease, opacity 240ms ease, color 240ms ease;
+}
+
+.social-btn:hover .social-arrow,
+.social-btn:focus-visible .social-arrow {
+  opacity: 1;
+  transform: translate(0, 0);
+  color: var(--primary-dark);
+}
+
+html[data-theme="dark"] .social-github .social-icon {
+  background: linear-gradient(135deg, #5b6472, #2b3038);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .social-btn,
+  .social-icon,
+  .social-arrow,
+  .social-btn::before,
+  .social-list.is-reveal .social-item {
+    transition: none;
+    animation: none;
+  }
+
+  .social-list.is-reveal .social-item {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .cta-section {
   padding: 64px 0;
   background: var(--ink);
@@ -762,6 +973,11 @@ h3 {
     grid-template-columns: 1fr;
   }
 
+  .social-inner {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
   .hero-visual {
     min-height: 420px;
   }
@@ -786,7 +1002,8 @@ h3 {
 
   .trust-list,
   .feature-grid,
-  .resource-grid {
+  .resource-grid,
+  .social-list {
     grid-template-columns: 1fr;
   }
 

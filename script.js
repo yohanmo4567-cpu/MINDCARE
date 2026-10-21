@@ -23,6 +23,33 @@ if (year) {
   year.textContent = String(new Date().getFullYear());
 }
 
+// ── Redes sociales: entrada progresiva al hacer scroll ──
+const socialList = document.querySelector("[data-social-list]");
+
+if (socialList) {
+  const socialItems = Array.from(socialList.querySelectorAll(".social-item"));
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (prefersReducedMotion || !("IntersectionObserver" in window)) {
+    socialItems.forEach((item) => item.classList.add("is-visible"));
+  } else {
+    socialList.classList.add("is-reveal");
+
+    const socialObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+
+        const position = Math.max(socialItems.indexOf(entry.target), 0);
+        entry.target.style.setProperty("--reveal-delay", `${position * 110}ms`);
+        entry.target.classList.add("is-visible");
+        socialObserver.unobserve(entry.target);
+      });
+    }, { threshold: 0.25 });
+
+    socialItems.forEach((item) => socialObserver.observe(item));
+  }
+}
+
 document.querySelectorAll(".auth-form").forEach((form) => {
   const message = form.querySelector(".form-message");
 
