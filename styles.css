@@ -14,6 +14,7 @@
   --max: 1120px;
   --header-bg: rgba(248, 246, 252, 0.92);
   --panel-overlay: rgba(255, 255, 255, 0.7);
+  --social-spotlight: rgba(255, 255, 255, 0.55);
 }
 
 /* ═══════════════════════════════════════════
@@ -33,6 +34,7 @@ html[data-theme="dark"] {
   --shadow: 0 20px 48px rgba(0, 0, 0, 0.45);
   --header-bg: rgba(23, 18, 37, 0.9);
   --panel-overlay: rgba(255, 255, 255, 0.06);
+  --social-spotlight: rgba(255, 255, 255, 0.26);
   color-scheme: dark;
 }
 
@@ -594,8 +596,24 @@ h3 {
    REDES SOCIALES
    ═══════════════════════════════════════════ */
 .social-section {
-  background: var(--surface);
+  position: relative;
+  background:
+    radial-gradient(circle at 12% 16%, rgba(139, 126, 217, 0.16), transparent 32%),
+    radial-gradient(circle at 88% 82%, rgba(201, 160, 224, 0.18), transparent 34%),
+    var(--surface);
   border-top: 1px solid var(--line);
+}
+
+/* Compensa la cabecera fija + barra de componentes al usar el ancla #redes */
+#redes {
+  scroll-margin-top: 168px;
+}
+
+html[data-theme="dark"] .social-section {
+  background:
+    radial-gradient(circle at 12% 16%, rgba(139, 126, 217, 0.24), transparent 34%),
+    radial-gradient(circle at 88% 82%, rgba(217, 174, 232, 0.16), transparent 36%),
+    var(--surface);
 }
 
 .social-inner {
@@ -685,13 +703,18 @@ h3 {
     background-color 350ms ease, background 220ms ease;
 }
 
-/* Degradado de marca que se revela al hacer hover */
+/* Degradado de marca + spotlight que sigue al cursor (al hacer hover) */
 .social-btn::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: -1;
   opacity: 0;
+  background-image: radial-gradient(
+    260px circle at var(--mx, 50%) var(--my, 50%),
+    var(--social-spotlight),
+    transparent 62%
+  );
   transition: opacity 220ms ease;
 }
 
@@ -710,11 +733,23 @@ h3 {
 }
 
 .social-tiktok::before {
-  background: linear-gradient(135deg, rgba(37, 244, 238, 0.22), rgba(254, 44, 85, 0.22));
+  background-image:
+    radial-gradient(
+      260px circle at var(--mx, 50%) var(--my, 50%),
+      var(--social-spotlight),
+      transparent 62%
+    ),
+    linear-gradient(135deg, rgba(37, 244, 238, 0.24), rgba(254, 44, 85, 0.24));
 }
 
 .social-github::before {
-  background: linear-gradient(135deg, rgba(139, 126, 217, 0.22), rgba(70, 78, 90, 0.22));
+  background-image:
+    radial-gradient(
+      260px circle at var(--mx, 50%) var(--my, 50%),
+      var(--social-spotlight),
+      transparent 62%
+    ),
+    linear-gradient(135deg, rgba(139, 126, 217, 0.24), rgba(70, 78, 90, 0.24));
 }
 
 .social-tiktok::after {

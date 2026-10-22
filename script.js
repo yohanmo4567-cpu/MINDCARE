@@ -50,6 +50,23 @@ if (socialList) {
   }
 }
 
+// ── Redes sociales: spotlight que sigue al cursor en las tarjetas ──
+document.querySelectorAll(".social-btn").forEach((card) => {
+  card.addEventListener("pointermove", (event) => {
+    const rect = card.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width) * 100;
+    const y = ((event.clientY - rect.top) / rect.height) * 100;
+
+    card.style.setProperty("--mx", `${x.toFixed(1)}%`);
+    card.style.setProperty("--my", `${y.toFixed(1)}%`);
+  });
+
+  card.addEventListener("pointerleave", () => {
+    card.style.setProperty("--mx", "50%");
+    card.style.setProperty("--my", "50%");
+  });
+});
+
 document.querySelectorAll(".auth-form").forEach((form) => {
   const message = form.querySelector(".form-message");
 
