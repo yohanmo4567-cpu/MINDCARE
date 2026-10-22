@@ -672,18 +672,20 @@ h3 {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
   height: 100%;
-  padding: 18px 18px;
+  padding: 20px;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: 18px;
   background: var(--bg);
+  box-shadow: 0 10px 26px rgba(46, 42, 64, 0.08);
   overflow: hidden;
   isolation: isolate;
   transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease,
     background-color 350ms ease, background 220ms ease;
 }
 
+/* Degradado de marca que se revela al hacer hover */
 .social-btn::before {
   content: "";
   position: absolute;
@@ -691,6 +693,20 @@ h3 {
   z-index: -1;
   opacity: 0;
   transition: opacity 220ms ease;
+}
+
+/* Barra de acento superior que se despliega al hacer hover */
+.social-btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  z-index: -1;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 280ms ease;
 }
 
 .social-tiktok::before {
@@ -701,16 +717,29 @@ h3 {
   background: linear-gradient(135deg, rgba(139, 126, 217, 0.22), rgba(70, 78, 90, 0.22));
 }
 
+.social-tiktok::after {
+  background: linear-gradient(90deg, #25f4ee, #fe2c55);
+}
+
+.social-github::after {
+  background: linear-gradient(90deg, var(--primary), #2f3336);
+}
+
 .social-btn:hover,
 .social-btn:focus-visible {
-  transform: translateY(-5px);
+  transform: translateY(-6px);
   border-color: transparent;
-  box-shadow: 0 18px 34px rgba(46, 42, 64, 0.18);
+  box-shadow: 0 26px 48px rgba(46, 42, 64, 0.18);
 }
 
 .social-btn:hover::before,
 .social-btn:focus-visible::before {
   opacity: 1;
+}
+
+.social-btn:hover::after,
+.social-btn:focus-visible::after {
+  transform: scaleX(1);
 }
 
 .social-btn:active {
@@ -720,10 +749,10 @@ h3 {
 .social-icon {
   display: grid;
   place-items: center;
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   flex: 0 0 auto;
-  border-radius: 14px;
+  border-radius: 16px;
   color: #fff;
   transition: transform 260ms ease, box-shadow 260ms ease;
 }
@@ -785,11 +814,21 @@ html[data-theme="dark"] .social-github .social-icon {
   background: linear-gradient(135deg, #5b6472, #2b3038);
 }
 
+html[data-theme="dark"] .social-btn {
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+}
+
+html[data-theme="dark"] .social-btn:hover,
+html[data-theme="dark"] .social-btn:focus-visible {
+  box-shadow: 0 26px 48px rgba(0, 0, 0, 0.5);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .social-btn,
   .social-icon,
   .social-arrow,
   .social-btn::before,
+  .social-btn::after,
   .social-list.is-reveal .social-item {
     transition: none;
     animation: none;
@@ -798,6 +837,11 @@ html[data-theme="dark"] .social-github .social-icon {
   .social-list.is-reveal .social-item {
     opacity: 1;
     transform: none;
+  }
+
+  .social-btn:hover::after,
+  .social-btn:focus-visible::after {
+    transform: scaleX(1);
   }
 }
 
