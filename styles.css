@@ -504,6 +504,7 @@ h3 {
 #estadisticas,
 #componente-recursos,
 #actividades,
+#redes-sociales,
 #recursos {
   scroll-margin-top: 156px;
 }
@@ -538,6 +539,54 @@ h3 {
   background: var(--surface-soft);
   color: var(--primary-dark);
   font-weight: 900;
+}
+
+/* Tarjeta del modulo de redes sociales */
+.feature-card-social {
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card-social::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #25f4ee, #fe2c55, #8b7ed9);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 260ms ease;
+}
+
+.feature-card-social:hover::after,
+.feature-card-social:focus-within::after {
+  transform: scaleX(1);
+}
+
+.feature-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  color: var(--primary-dark);
+  font-size: 0.92rem;
+  font-weight: 900;
+  transition: color 180ms ease, gap 180ms ease;
+}
+
+.feature-link:hover {
+  gap: 11px;
+  color: var(--primary);
+}
+
+.feature-link svg {
+  transition: transform 180ms ease;
+}
+
+.feature-link:hover svg {
+  transform: translateX(2px);
 }
 
 .split-section {
